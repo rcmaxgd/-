@@ -9,6 +9,7 @@
       padding: 0;
       overflow: hidden;
       background: #0066ff;
+      font-family: Arial, sans-serif;
     }
     canvas {
       display: block;
@@ -29,10 +30,16 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
+// ============================
+// INSTELLINGEN
+// ============================
 const speed = 6;
 const waveSize = 10;
 const gapHeight = 180;
 
+// ============================
+// GAME STATE
+// ============================
 let wave = {
   x: canvas.width * 0.25,
   y: canvas.height / 2,
@@ -41,38 +48,65 @@ let wave = {
 
 let holding = false;
 let offset = 0;
+let score = 0;
 
+// ============================
+// INPUT
+// ============================
 window.addEventListener("mousedown", () => holding = true);
 window.addEventListener("mouseup", () => holding = false);
 window.addEventListener("touchstart", () => holding = true);
 window.addEventListener("touchend", () => holding = false);
 
+// ============================
+// RESET
+// ============================
 function reset() {
   wave.y = canvas.height / 2;
   offset = 0;
+  score = 0;
 }
 
+// ============================
+// GAME LOOP
+// ============================
 function loop() {
+  // Achtergrond
   ctx.fillStyle = "#0066ff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Score
+  score++;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, 20, 30);
+
+  // Wave beweging
   wave.dir = holding ? -1 : 1;
   wave.y += wave.dir * speed;
   offset += speed;
 
-  const center = canvas.height / 2 + Math.sin(offset * 0.01) * 120;
+  // Corridor die midden kan draaien
+  const center =
+    canvas.height / 2 +
+    Math.sin(offset * 0.01) * 120 +
+    Math.sin(offset * 0.03) * 40;
+
   const topWall = center - gapHeight / 2;
   const bottomWall = center + gapHeight / 2;
 
+  // Muren
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, topWall);
   ctx.fillRect(0, bottomWall, canvas.width, canvas.height);
 
+  // Collision
   if (wave.y - waveSize < topWall || wave.y + waveSize > bottomWall) {
     reset();
   }
 
-  ctx.strokeStyle = "#fff";
+  // Wave tekenen
+  ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(wave.x - waveSize, wave.y - waveSize);
